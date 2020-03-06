@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- encoding: utf-8 -*-
 import os.path as osp
 
 from easydict import EasyDict as edict

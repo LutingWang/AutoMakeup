@@ -1,12 +1,17 @@
+#!/usr/bin/python
+# -*- encoding: utf-8 -*-
+import sys
+
 import numpy as np
 from PIL import Image
 import torch
 from torch.backends import cudnn
 from torchvision import transforms
 
-from makeup.lms import lms
-from makeup.mask import mask
-from makeup.solver_makeup import Solver_makeupGAN
+from .config import config
+sys.path.append(config.pwd + '/..')
+import faceutils as futils
+from .solver_makeup import Solver_makeupGAN
 
 cudnn.benchmark = True
 solver = Solver_makeupGAN()
@@ -48,16 +53,18 @@ def _ToTensor(pic):
         return img
 
 
-def preprocess(img):
-    img, msk = mask.gen(img)
-    landmarks = lms.gen(img).transpose((1, 0)).reshape(-1, 1, 1)   # transpose to (y-x)
-    landmarks = np.tile(landmarks, (1, 256, 256))  # (136, h, w)
-    diff = _fix - landmarks
-    return [_transform(img), _ToTensor(msk), diff]
+def preprocess(image: Image):
+    face = futils.dlib.detect(image)
+    if not face:
+        raise RuntimeException("no faces detected")
+    face = face[0]
+    image, face = futils.dlib.crop(image, face)
+    lms = futils.dlib.landmarks(image, face) * 256 / image.width
+    lms = lms.round().transpose((1, 0)).reshape(-1, 1, 1)   # transpose to (y-x)
+    lms = np.tile(lms, (1, 256, 256))  # (136, h, w)
+    diff = _fix - lms
 
-
-if __name__ == '__main__':
-    # image_A = Image.open('src.png').convert("RGB") # SY
-    # image_B = Image.open('ref.png').convert("RGB") # MAKE
-    # transfer(image_A, image_B).save('result.png')
-    pass
+    image = image.resize((512, 512), Image.ANTIALIAS)
+    mask = futils.mask.mask(image).resize((256, 256), Image.ANTIALIAS)
+    image = image.resize((256, 256), Image.ANTIALIAS)
+    return [_transform(image), _ToTensor(mask), diff]

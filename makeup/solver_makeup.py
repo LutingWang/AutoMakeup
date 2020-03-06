@@ -1,11 +1,13 @@
+#!/usr/bin/python
+# -*- encoding: utf-8 -*-
 import torch
 import torch.nn.init as init
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torchvision.transforms import ToPILImage
 
-from makeup.config import config
-import makeup.net as net
+from .config import config
+from . import net
 
 class Solver_makeupGAN(object):
     def __init__(self):

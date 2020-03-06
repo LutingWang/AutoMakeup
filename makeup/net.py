@@ -1,8 +1,10 @@
+#!/usr/bin/python
+# -*- encoding: utf-8 -*-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from makeup.config import config
+from .config import config
 
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN.
