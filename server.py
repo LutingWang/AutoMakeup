@@ -13,8 +13,8 @@ import makeup
 refs = []
 for i in range(1):
     with Image.open(f'refs/{i}.png') as image:
-        # refs.append(makeup.preprocess(image))
-        refs.append(None)
+        refs.append(makeup.preprocess(image))
+        # refs.append(None)
 
 app = Flask(__name__)
 
@@ -25,7 +25,7 @@ def transfer():
     model = data.get('model')
     image = base64.b64decode(data.get('file'))
     image = Image.open(BytesIO(image))
-    # image = solver.test(*(preprocess(image)), *(refs[model]))
+    image = makeup.solver.test(*(makeup.preprocess(image)), *(refs[model]))
     return futils.fpp.beautify(image)
 
 
@@ -59,3 +59,7 @@ def test():
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 5001, debug = True, ssl_context = ('ssl/server.crt', 'ssl/server.key'))
+    # src = Image.open('refs/0.png').convert('RGB')
+    # ref = Image.open('refs/3.png').convert('RGB')
+    # result = makeup.solver.test(*(makeup.preprocess(src)), *(makeup.preprocess(ref)))
+    # result.save('result.png')

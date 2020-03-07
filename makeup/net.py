@@ -337,21 +337,18 @@ class Generator_spade(nn.Module):
         one = torch.tensor(1.0)
         weight_mask = torch.where(weight == torch.tensor(0.0), weight, one)  # 取出为1的mask
 
-        weight = weight * config.w_weight  # magic numpy，用于调节采样的范围
-        # weight = weight * 10             # 用于展示可视化结果
+        weight *= config.w_weight  # magic numpy，用于调节采样的范围
         weight = nn.Softmax(dim=-1)(weight)
-        weight = weight * weight_mask  # 不能对有grad的Tensor使用 *= 这种inplace操作！
+        weight *= weight_mask  # 不能对有grad的Tensor使用 *= 这种inplace操作！
         return weight
 
-    def forward_atten(self, c, s, mask_list_c, mask_list_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
+    def forward_atten(self, c, s, mask_c, mask_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
         """attention version
         c: (b, c, h, w)
         mask_list_c: lip, skin, eye. (b, 1, h, w)
         """
         img_c = c
         img_s = s
-        mask_c = torch.cat(mask_list_c, 0)      # (3, 1, h, w)
-        mask_s = torch.cat(mask_list_s, 0)
         # forward c in tnet
         c_tnet = self.tnet_in_conv(c)
         s = self.pnet_in(s)

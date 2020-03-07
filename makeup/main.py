@@ -5,6 +5,8 @@ import sys
 import numpy as np
 from PIL import Image
 import torch
+from torch.autograd import Variable
+import torch.nn.functional as F
 from torch.backends import cudnn
 from torchvision import transforms
 
@@ -16,19 +18,12 @@ from .solver_makeup import Solver_makeupGAN
 cudnn.benchmark = True
 solver = Solver_makeupGAN()
 
-_transform = transforms.Compose([
+transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.5,0.5,0.5],[0.5,0.5,0.5])])
 
-_fix = np.zeros((256, 256, 68 * 2))
-for i in range(256):  # 行 (y) h
-    for j in range(256):  # 列 (x) w
-        _fix[i, j, :68] = i  # 赋值y
-        _fix[i, j, 68:] = j  # 赋值x
-_fix = _fix.transpose((2, 0, 1))  # (138, h, w)
 
-
-def _ToTensor(pic):
+def ToTensor(pic):
     # handle PIL Image
     if pic.mode == 'I':
         img = torch.from_numpy(np.array(pic, np.int32, copy=False))
@@ -53,18 +48,68 @@ def _ToTensor(pic):
         return img
 
 
+def to_var(x, requires_grad=True):
+    if requires_grad:
+        return Variable(x).float()
+    else:
+        return Variable(x, requires_grad=requires_grad).float()
+
+
+def copy_area(tar, src, lms):
+    rect = [int(min(lms[:, 1])) - preprocess.eye_margin, 
+            int(min(lms[:, 0])) - preprocess.eye_margin, 
+            int(max(lms[:, 1])) + preprocess.eye_margin + 1, 
+            int(max(lms[:, 0])) + preprocess.eye_margin + 1]
+    tar[:, :, rect[1]:rect[3], rect[0]:rect[2]] = \
+        src[:, :, rect[1]:rect[3], rect[0]:rect[2]]
+
+
 def preprocess(image: Image):
     face = futils.dlib.detect(image)
     if not face:
         raise RuntimeException("no faces detected")
     face = face[0]
     image, face = futils.dlib.crop(image, face)
+
     lms = futils.dlib.landmarks(image, face) * 256 / image.width
-    lms = lms.round().transpose((1, 0)).reshape(-1, 1, 1)   # transpose to (y-x)
+    lms = lms.round()
+    lms_eye_left = lms[42:48]
+    lms_eye_right = lms[36:42]
+    lms = lms.transpose((1, 0)).reshape(-1, 1, 1)   # transpose to (y-x)
     lms = np.tile(lms, (1, 256, 256))  # (136, h, w)
-    diff = _fix - lms
+    diff = to_var(torch.Tensor(fix - lms).unsqueeze(0), requires_grad=False)
 
     image = image.resize((512, 512), Image.ANTIALIAS)
     mask = futils.mask.mask(image).resize((256, 256), Image.ANTIALIAS)
+    mask = to_var(ToTensor(mask).unsqueeze(0), requires_grad=False)
+    mask_lip = (mask == 7).float() + (mask == 9).float()
+    mask_face = (mask == 1).float() + (mask == 6).float()
+
+    mask_eyes = torch.zeros_like(mask)
+    copy_area(mask_eyes, mask_face, lms_eye_left)
+    copy_area(mask_eyes, mask_face, lms_eye_right)
+    mask_eyes = to_var(mask_eyes, requires_grad=False)
+
+    mask_list = [mask_lip, mask_face, mask_eyes]
+    mask_aug = torch.cat(mask_list, 0)      # (3, 1, h, w)
+    mask_re = F.interpolate(mask_aug, size=preprocess.diff_size).repeat(1, diff.shape[1], 1, 1)  # (3, 136, diff_size, diff_size)
+    diff_re = F.interpolate(diff, size=preprocess.diff_size).repeat(3, 1, 1, 1)  # (3, 136, diff_size, diff_size)
+    diff_re = diff_re * mask_re  # (3, 136, 32, 32)
+    norm = torch.norm(diff_re, dim=1, keepdim=True).repeat(1, diff_re.shape[1], 1, 1)
+    norm = torch.where(norm == 0, torch.tensor(1e10), norm)
+    diff_re /= norm
+
     image = image.resize((256, 256), Image.ANTIALIAS)
-    return [_transform(image), _ToTensor(mask), diff]
+    real = to_var(transform(image).unsqueeze(0))
+    return [real, mask_aug, diff_re]
+
+
+fix = np.zeros((256, 256, 68 * 2))
+for i in range(256):  # 行 (y) h
+    for j in range(256):  # 列 (x) w
+        fix[i, j, :68] = i  # 赋值y
+        fix[i, j, 68:] = j  # 赋值x
+fix = fix.transpose((2, 0, 1))  # (138, h, w)
+
+preprocess.eye_margin = 16
+preprocess.diff_size = (config.diff_size, config.diff_size)
