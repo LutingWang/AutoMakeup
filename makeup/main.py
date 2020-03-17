@@ -8,7 +8,6 @@ sys.path.append(pwd + '/..')
 import numpy as np
 from PIL import Image
 import torch
-from torch.autograd import Variable
 import torch.nn.functional as F
 from torchvision import transforms
 
@@ -19,7 +18,8 @@ solver = Solver_makeupGAN()
 
 transform = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Normalize([0.5,0.5,0.5],[0.5,0.5,0.5])])
+    transforms.Normalize([0.5,0.5,0.5],[0.5,0.5,0.5]),
+])
 
 
 def ToTensor(pic):
@@ -47,13 +47,6 @@ def ToTensor(pic):
         return img
 
 
-def to_var(x, requires_grad=True):
-    if requires_grad:
-        return Variable(x).float()
-    else:
-        return Variable(x, requires_grad=requires_grad).float()
-
-
 def copy_area(tar, src, lms):
     rect = [int(min(lms[:, 1])) - preprocess.eye_margin, 
             int(min(lms[:, 0])) - preprocess.eye_margin, 
@@ -76,30 +69,29 @@ def preprocess(image: Image):
     lms_eye_right = lms[36:42]
     lms = lms.transpose((1, 0)).reshape(-1, 1, 1)   # transpose to (y-x)
     lms = np.tile(lms, (1, 256, 256))  # (136, h, w)
-    diff = to_var(torch.Tensor(fix - lms).unsqueeze(0), requires_grad=False)
+    diff = torch.Tensor(fix - lms).unsqueeze(0)
 
     image = image.resize((512, 512), Image.ANTIALIAS)
     mask = futils.mask.mask(image).resize((256, 256), Image.ANTIALIAS)
-    mask = to_var(ToTensor(mask).unsqueeze(0), requires_grad=False)
+    mask = ToTensor(mask).unsqueeze(0)
     mask_lip = (mask == 7).float() + (mask == 9).float()
     mask_face = (mask == 1).float() + (mask == 6).float()
 
     mask_eyes = torch.zeros_like(mask)
     copy_area(mask_eyes, mask_face, lms_eye_left)
     copy_area(mask_eyes, mask_face, lms_eye_right)
-    mask_eyes = to_var(mask_eyes, requires_grad=False)
 
     mask_list = [mask_lip, mask_face, mask_eyes]
-    mask_aug = torch.cat(mask_list, 0)      # (3, 1, h, w)
-    mask_re = F.interpolate(mask_aug, size=preprocess.diff_size).repeat(1, diff.shape[1], 1, 1)  # (3, 136, 64, 64)
-    diff_re = F.interpolate(diff, size=preprocess.diff_size).repeat(3, 1, 1, 1)  # (3, 136, 64, 64)
+    mask_aug = F.interpolate(torch.cat(mask_list, 0), size=64)      # (3, 1, h, w)
+    mask_re = mask_aug.repeat(1, diff.shape[1], 1, 1)  # (3, 136, 64, 64)
+    diff_re = F.interpolate(diff, size=64).repeat(3, 1, 1, 1)  # (3, 136, 64, 64)
     diff_re = diff_re * mask_re  # (3, 136, 32, 32)
     norm = torch.norm(diff_re, dim=1, keepdim=True).repeat(1, diff_re.shape[1], 1, 1)
     norm = torch.where(norm == 0, torch.tensor(1e10), norm)
     diff_re /= norm
 
     image = image.resize((256, 256), Image.ANTIALIAS)
-    real = to_var(transform(image).unsqueeze(0))
+    real = transform(image).unsqueeze(0)
     return [real, mask_aug, diff_re]
 
 
@@ -111,4 +103,3 @@ for i in range(256):  # 行 (y) h
 fix = fix.transpose((2, 0, 1))  # (138, h, w)
 
 preprocess.eye_margin = 16
-preprocess.diff_size = (64, 64)

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+import time
 from io import BytesIO
 
 import base64
@@ -25,7 +26,9 @@ def transfer():
     model = data.get('model')
     image = base64.b64decode(data.get('file'))
     image = Image.open(BytesIO(image))
+    print(time.time())
     image = makeup.solver.test(*(makeup.preprocess(image)), *(refs[model]))
+    print(time.time())
     return futils.fpp.beautify(image)
 
 

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import time
 import numpy as np
 import scipy.sparse as sp
 import torch
@@ -15,18 +14,14 @@ import torch.nn.functional as F
 
 class ResidualBlock(nn.Module):
     """Residual Block."""
-    def __init__(self, dim_in, dim_out, net_mode=None):
-        if net_mode == 'p' or (net_mode is None):
-            use_affine = True
-        elif net_mode == 't':
-            use_affine = False
+    def __init__(self, dim, pnet):
         super().__init__()
         self.main = nn.Sequential(
-            nn.Conv2d(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.InstanceNorm2d(dim_out, affine=use_affine),
+            nn.Conv2d(dim, dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.InstanceNorm2d(dim, affine=pnet),
             nn.ReLU(inplace=True),
-            nn.Conv2d(dim_out, dim_out, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.InstanceNorm2d(dim_out, affine=use_affine)
+            nn.Conv2d(dim, dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.InstanceNorm2d(dim, affine=pnet),
         )
 
     def forward(self, x):
@@ -34,11 +29,10 @@ class ResidualBlock(nn.Module):
 
 
 class GetSPADE(nn.Module):
-    def __init__(self, dim_in, dim_out):
-        super(GetSPADE, self).__init__()
-        # 这里统一把卷积核改成1*1
-        self.get_gamma = nn.Conv2d(dim_in, dim_out, kernel_size=1, stride=1, padding=0, bias=False)
-        self.get_beta = nn.Conv2d(dim_in, dim_out, kernel_size=1, stride=1, padding=0, bias=False)
+    def __init__(self, dim_in):
+        super().__init__()
+        self.get_gamma = nn.Conv2d(dim_in, 1, kernel_size=1, stride=1, padding=0, bias=False)
+        self.get_beta = nn.Conv2d(dim_in, 1, kernel_size=1, stride=1, padding=0, bias=False)
 
     def forward(self, x):
         gamma = self.get_gamma(x)
@@ -46,26 +40,15 @@ class GetSPADE(nn.Module):
         return gamma, beta
 
 
-class NONLocalBlock2D(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.g = nn.Conv2d(in_channels=1, out_channels=1,
-                           kernel_size=1, stride=1, padding=0)
-
-    def forward(self, source, weight):
-        """(b, c, h, w)
-        src_diff: (3, 136, 32, 32)
-        return: 从source中采样，得到target的形状
-        """
-        batch_size = source.size(0)
-
-        g_source = source.view(batch_size, 1, -1)  # (N, C, H*W)
-        g_source = g_source.permute(0, 2, 1)  # (N, H*W, C)
-
-        y = [weight[i] @ g_source[i] for i in range(3)]
-        y = y[0] + y[1] + y[2]
-        y = y.transpose().reshape(1, 1, 64, 64)
-        return torch.tensor(y)
+def nonLocalBlock2D(source, weight):
+    """return: 从source中采样，得到target的形状"""
+    assert source.shape == (3, 1, 64, 64)
+    g_source = source.view(3, 1, -1)  # (N, C, H*W)
+    g_source = g_source.permute(0, 2, 1)  # (N, H*W, C)
+    y = [weight[i] @ g_source[i] for i in range(3)]
+    y = y[0] + y[1] + y[2]
+    y = y.transpose().reshape(1, 1, 64, 64)
+    return torch.tensor(y)
 
 
 class Generator_spade(nn.Module):
@@ -95,12 +78,10 @@ class Generator_spade(nn.Module):
             curr_dim = curr_dim * 2
 
         # Bottleneck. All bottlenecks share the same attention module
-        self.atten_bottleneck_g = NONLocalBlock2D()
-        self.atten_bottleneck_b = NONLocalBlock2D()
-        self.simple_spade = GetSPADE(curr_dim, 1)
+        self.simple_spade = GetSPADE(curr_dim)
 
         for i in range(3):
-            setattr(self, f'pnet_bottleneck_{i+1}', ResidualBlock(dim_in=curr_dim, dim_out=curr_dim, net_mode='p'))
+            setattr(self, f'pnet_bottleneck_{i+1}', ResidualBlock(dim=curr_dim, pnet=True))
 
         # --------------------------------------- TNet ---------------------------------------
 
@@ -119,7 +100,7 @@ class Generator_spade(nn.Module):
 
         # Bottleneck
         for i in range(6):
-            setattr(self, f'tnet_bottleneck_{i+1}', ResidualBlock(dim_in=curr_dim, dim_out=curr_dim, net_mode='t'))
+            setattr(self, f'tnet_bottleneck_{i+1}', ResidualBlock(dim=curr_dim, pnet=False))
 
         # Up-Sampling
         for i in range(2):
@@ -135,109 +116,78 @@ class Generator_spade(nn.Module):
         self.tnet_out = layers
 
     @staticmethod
-    def atten_feature(mask_s, weight, gamma_s, beta_s, atten_module_g, atten_module_b):
+    def atten_feature(mask_s, weight, gamma_s, beta_s):
         """
         feature size: (1, c, h, w)
         mask_c(s): (3, 1, h, w)
         diff_c: (1, 138, 256, 256)
         return: (1, c, h, w)
         """
-        channel_num = gamma_s.shape[1]
+        gamma_s = gamma_s.repeat(3, 1, 1, 1) * mask_s  # (3, c, h, w) 每个部位分别提取，变成batch
+        beta_s = beta_s.repeat(3, 1, 1, 1) * mask_s
 
-        mask_s_re = F.interpolate(mask_s, size=gamma_s.shape[2:]).repeat(1, channel_num, 1, 1)
-        gamma_s_re = gamma_s.repeat(3, 1, 1, 1)
-        gamma_s = gamma_s_re * mask_s_re  # (3, c, h, w) 每个部位分别提取，变成batch
-        beta_s_re = beta_s.repeat(3, 1, 1, 1)
-        beta_s = beta_s_re * mask_s_re
-
-        gamma = atten_module_g(gamma_s, weight)  # (3, c, h, w)
-        beta = atten_module_b(beta_s, weight)
+        gamma = nonLocalBlock2D(gamma_s, weight)  # (3, c, h, w)
+        beta = nonLocalBlock2D(beta_s, weight)
         return gamma, beta
 
     @staticmethod
-    def get_weight(mask_c, mask_s, fea_c, fea_s, diff_c, diff_s):
-        """  s --> source; c --> target
+    def param(mask, fea, diff):
+        """
         feature size: (1, 256, 64, 64)
         diff: (3, 136, 32, 32)
         """
-        HW = 64 * 64
-        batch_size = 3
-        assert fea_s is not None   # fea_s when i==3
-        # get 3 part fea using mask
-        channel_num = fea_s.shape[1]
+        mask_re = mask.repeat(1, 256, 1, 1)  # (3, c, h, w)
+        fea = fea.repeat(3, 1, 1, 1)                 # (3, c, h, w)
+        fea = fea * mask_re                        # (3, c, h, w) 最后做atten的fea。3代表3个部位。
+        _input = torch.cat((fea * 0.01, diff), dim=1)
+        return _input.view(3, -1, 64 * 64)  # (N, C+136, H*W)
 
-        mask_c_re = F.interpolate(mask_c, size=64).repeat(1, channel_num, 1, 1)  # (3, c, h, w)
-        fea_c = fea_c.repeat(3, 1, 1, 1)                 # (3, c, h, w)
-        fea_c = fea_c * mask_c_re                        # (3, c, h, w) 最后做atten的fea。3代表3个部位。
+    @staticmethod
+    def get_weight(theta, phi):
 
-        mask_s_re = F.interpolate(mask_s, size=64).repeat(1, channel_num, 1, 1)
-        fea_s = fea_s.repeat(3, 1, 1, 1)
-        fea_s = fea_s * mask_s_re
+        def ones(mat):
+            result = mat.copy()
+            result.data = np.ones_like(result.data)
+            return result
 
-        theta_input = torch.cat((fea_c * 0.01, diff_c), dim=1)
-        phi_input = torch.cat((fea_s * 0.01, diff_s), dim=1)
-
-        theta_target = theta_input.view(batch_size, -1, HW)  # (N, C+136, H*W)
-        theta_target = theta_target.permute(0, 2, 1)  # (N, H*W, C+136)
-
-        phi_source = phi_input.view(batch_size, -1, HW)  # (N, C+136, H*W)
-
-
-        def get_weight_ch(theta, phi):
-            theta = sp.csr_matrix(theta)
-            phi = sp.csc_matrix(phi)
-            weight = theta @ phi
-            weight *= 200
+        theta = sp.csr_matrix(theta)
+        phi = sp.csc_matrix(phi)
+        weight = theta @ phi
+        weight *= 200
         
-            maximums = weight.max(axis=-1)
-            ones = maximums.copy()
-            ones.data = np.ones_like(ones.data)
-            maximums += ones * 0.01 # max will be subtracted to -0.01, otherwise omitted in sp
+        maximums = weight.max(axis=-1)
+        maximums += ones(maximums) * 0.01 # max will be subtracted to -0.01, otherwise omitted in sp
         
-            maximums = np.array(maximums.todense().squeeze())[0]
-            maximums = sp.diags(maximums, format='coo')
-            ones = weight.copy()
-            ones.data = np.ones_like(ones.data)
-            weight -= maximums @ ones
-            weight.data = np.exp(weight.data)
+        maximums = np.array(maximums.todense().squeeze())[0]
+        maximums = sp.diags(maximums, format='coo')
+        weight -= maximums @ ones(weight)
+        weight.data = np.exp(weight.data)
         
-            sums = np.array(weight.sum(axis=-1).squeeze())[0]
-            sums = sp.diags(sums, format='coo')
-            ones = weight.copy()
-            ones.data = np.ones_like(ones.data)
-            sums *= ones
-            weight.data = np.divide(weight.data, sums.data)
-            return weight
-        
-        weight = [get_weight_ch(theta_target[i], phi_source[i]) for i in range(3)]
+        sums = np.array(weight.sum(axis=-1).squeeze())[0]
+        sums = sp.diags(sums, format='coo')
+        sums *= ones(weight)
+        weight.data = np.divide(weight.data, sums.data)
         return weight
-
 
     def forward_atten(self, c, s, mask_c, mask_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
         """attention version
         c: (b, c, h, w)
         mask_list_c: lip, skin, eye. (b, 1, h, w)
         """
-        img_c = c
-        img_s = s
-        # forward c in tnet
-        c_tnet = self.tnet_in_conv(c)
         s = self.pnet_in(s)
-        c_tnet = self.tnet_in_spade(c_tnet)
-        c_tnet = self.tnet_in_relu(c_tnet)
+
+        # forward c in tnet
+        c = self.tnet_in_conv(c)
+        c = self.tnet_in_spade(c)
+        c = self.tnet_in_relu(c)
 
         # down-sampling
         for i in range(2):
             if gamma is None:
-                cur_pnet_down = getattr(self, f'pnet_down_{i+1}')
-                s = cur_pnet_down(s)
-
-            cur_tnet_down_conv = getattr(self, f'tnet_down_conv_{i+1}')
-            cur_tnet_down_spade = getattr(self, f'tnet_down_spade_{i+1}')
-            cur_tnet_down_relu = getattr(self, f'tnet_down_relu_{i+1}')
-            c_tnet = cur_tnet_down_conv(c_tnet)
-            c_tnet = cur_tnet_down_spade(c_tnet)
-            c_tnet = cur_tnet_down_relu(c_tnet)
+                s = getattr(self, f'pnet_down_{i+1}')(s)
+            c = getattr(self, f'tnet_down_conv_{i+1}')(c)
+            c = getattr(self, f'tnet_down_spade_{i+1}')(c)
+            c = getattr(self, f'tnet_down_relu_{i+1}')(c)
 
         # bottleneck
         for i in range(6):
@@ -247,30 +197,27 @@ class Generator_spade(nn.Module):
 
             # get s_pnet from p and transform
             if i == 3:
-                if gamma is None:               # not in test_mix
+                if gamma is None:
+                    theta = self.param(mask_c, c, diff_c).permute(0, 2, 1)  # (N, H*W, C+136)
+                    phi = self.param(mask_s, s, diff_s)
+                    weight = [self.get_weight(theta[i], phi[i]) for i in range(3)]
                     gamma, beta = self.simple_spade(s)
-                    # if (mask_s[1] != mask_c[1]).any():  # 如果不是同一张图才atten
-                    weight = self.get_weight(mask_c, mask_s, c_tnet, s, diff_c, diff_s)
-
-                    gamma, beta = self.atten_feature(mask_s, weight, gamma, beta, self.atten_bottleneck_g, self.atten_bottleneck_b)
+                    gamma, beta = self.atten_feature(mask_s, weight, gamma, beta)
                     if ret:
                         return [gamma, beta]
 
-                c_tnet = c_tnet * (1 + gamma) + beta
+                c = c * (1 + gamma) + beta
 
             if gamma is None and i <= 2:
                 s = cur_pnet_bottleneck(s)
-            c_tnet = cur_tnet_bottleneck(c_tnet)
+            c = cur_tnet_bottleneck(c)
 
         # up-sampling
         for i in range(2):
-            cur_tnet_up_conv = getattr(self, f'tnet_up_conv_{i+1}')
-            cur_tnet_up_spade = getattr(self, f'tnet_up_spade_{i+1}')
-            cur_tnet_up_relu = getattr(self, f'tnet_up_relu_{i+1}')
-            c_tnet = cur_tnet_up_conv(c_tnet)
-            c_tnet = cur_tnet_up_spade(c_tnet)
-            c_tnet = cur_tnet_up_relu(c_tnet)
+            c = getattr(self, f'tnet_up_conv_{i+1}')(c)
+            c = getattr(self, f'tnet_up_spade_{i+1}')(c)
+            c = getattr(self, f'tnet_up_relu_{i+1}')(c)
 
-        c_tnet = self.tnet_out(c_tnet)
-        return c_tnet
+        c = self.tnet_out(c)
+        return c
 
