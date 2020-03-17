@@ -16,7 +16,7 @@ n_classes = 19
 save_pth = osp.split(osp.realpath(__file__))[0] + '/resnet.pth'
 
 net = BiSeNet(n_classes=19)
-net.load_state_dict(torch.load(save_pth, map_location='cpu'))
+net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
 net.eval()
 to_tensor = transforms.Compose([
     transforms.ToTensor(),
@@ -30,7 +30,7 @@ def mask(image: Image):
         image = to_tensor(image)
         image = torch.unsqueeze(image, 0)
         out = net(image)[0]
-        parsing = out.squeeze(0).cpu().numpy().argmax(0)
+        parsing = out.squeeze(0).numpy().argmax(0)
     for r in range(parsing.shape[0]):
         parsing[r] = [mapper[x] for x in parsing[r]]
     return Image.fromarray(parsing.astype(np.uint8))

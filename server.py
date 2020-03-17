@@ -11,7 +11,7 @@ import faceutils as futils
 import makeup
 
 refs = []
-for i in range(1):
+for i in range(8):
     with Image.open(f'refs/{i}.png') as image:
         refs.append(makeup.preprocess(image))
         # refs.append(None)
@@ -34,10 +34,10 @@ def exchange():
     data = json.loads(request.get_data().decode())
     images = [base64.b64decode(image) for image in data]
     images = [Image.open(BytesIO(image)) for image in images]
-    # images = [preprocess(image) for image in images]
-    # images = [solver.test(*(images[0]), *(images[1])), 
-    #           solver.test(*(images[1]), *(images[0]))]
-    images = [images[1], images[0]]
+    images = [makeup.preprocess(image) for image in images]
+    images = [makeup.solver.test(*(images[0]), *(images[1])), 
+              makeup.solver.test(*(images[1]), *(images[0]))]
+    # images = [images[1], images[0]]
     images = [futils.fpp.beautify(image) for image in images]
     return json.dumps(images)
 
@@ -47,19 +47,18 @@ def test():
     image = json.loads(request.get_data().decode()).get('file')
     image = Image.open(BytesIO(base64.b64decode(image)))
     max_score = -1
-    for _ in refs:
-        # temp = solver.test(*(preprocess(image)), *(refs[model]))
-        temp = image
+    for model in refs:
+        temp = makeup.solver.test(*(makeup.preprocess(image)), *(model))
         score = futils.fpp.rank(temp)
         if score > max_score:
             max_score = score
             result = temp
-    return futils.fpp.beautify(result)
+    return { 'file': futils.fpp.beautify(result), 'score': score }
 
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 5001, debug = True, ssl_context = ('ssl/server.crt', 'ssl/server.key'))
     # src = Image.open('refs/0.png').convert('RGB')
-    # ref = Image.open('refs/3.png').convert('RGB')
+    # ref = Image.open('refs/2.png').convert('RGB')
     # result = makeup.solver.test(*(makeup.preprocess(src)), *(makeup.preprocess(ref)))
     # result.save('result.png')

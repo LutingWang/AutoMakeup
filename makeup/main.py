@@ -1,21 +1,20 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+import os.path as osp
+pwd = osp.split(osp.realpath(__file__))[0]
 import sys
+sys.path.append(pwd + '/..')
 
 import numpy as np
 from PIL import Image
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
-from torch.backends import cudnn
 from torchvision import transforms
 
-from .config import config
-sys.path.append(config.pwd + '/..')
 import faceutils as futils
 from .solver_makeup import Solver_makeupGAN
 
-cudnn.benchmark = True
 solver = Solver_makeupGAN()
 
 transform = transforms.Compose([
@@ -92,8 +91,8 @@ def preprocess(image: Image):
 
     mask_list = [mask_lip, mask_face, mask_eyes]
     mask_aug = torch.cat(mask_list, 0)      # (3, 1, h, w)
-    mask_re = F.interpolate(mask_aug, size=preprocess.diff_size).repeat(1, diff.shape[1], 1, 1)  # (3, 136, diff_size, diff_size)
-    diff_re = F.interpolate(diff, size=preprocess.diff_size).repeat(3, 1, 1, 1)  # (3, 136, diff_size, diff_size)
+    mask_re = F.interpolate(mask_aug, size=preprocess.diff_size).repeat(1, diff.shape[1], 1, 1)  # (3, 136, 64, 64)
+    diff_re = F.interpolate(diff, size=preprocess.diff_size).repeat(3, 1, 1, 1)  # (3, 136, 64, 64)
     diff_re = diff_re * mask_re  # (3, 136, 32, 32)
     norm = torch.norm(diff_re, dim=1, keepdim=True).repeat(1, diff_re.shape[1], 1, 1)
     norm = torch.where(norm == 0, torch.tensor(1e10), norm)
@@ -112,4 +111,4 @@ for i in range(256):  # 行 (y) h
 fix = fix.transpose((2, 0, 1))  # (138, h, w)
 
 preprocess.eye_margin = 16
-preprocess.diff_size = (config.diff_size, config.diff_size)
+preprocess.diff_size = (64, 64)
