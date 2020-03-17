@@ -62,12 +62,10 @@ class NONLocalBlock2D(nn.Module):
         g_source = source.view(batch_size, 1, -1)  # (N, C, H*W)
         g_source = g_source.permute(0, 2, 1)  # (N, H*W, C)
 
-        # y = torch.bmm(weight.to_dense(), g_source)
         y = [weight[i] @ g_source[i] for i in range(3)]
-        y = torch.cat([torch.tensor(e).unsqueeze(0) for e in y])
-        y = y.permute(0, 2, 1).contiguous()  # (N, C, H*W)
-        y = y.view(batch_size, 1, *source.size()[2:])     # 为啥有*
-        return y
+        y = y[0] + y[1] + y[2]
+        y = y.transpose().reshape(1, 1, 64, 64)
+        return torch.tensor(y)
 
 
 class Generator_spade(nn.Module):
@@ -154,9 +152,6 @@ class Generator_spade(nn.Module):
 
         gamma = atten_module_g(gamma_s, weight)  # (3, c, h, w)
         beta = atten_module_b(beta_s, weight)
-
-        gamma = (gamma[0] + gamma[1] + gamma[2]).unsqueeze(0)  # (c, h, w) 把三个部位合并
-        beta = (beta[0] + beta[1] + beta[2]).unsqueeze(0)
         return gamma, beta
 
     @staticmethod
