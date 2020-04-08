@@ -183,13 +183,11 @@ class Generator_spade(nn.Module):
 
         # bottleneck
         for i in range(3):
-            cur_pnet_bottleneck = getattr(self, f'pnet_bottleneck_{i+1}')
-            cur_tnet_bottleneck = getattr(self, f'tnet_bottleneck_{i+1}')
-            s = cur_pnet_bottleneck(s)
-            c = cur_tnet_bottleneck(c)
+            s = getattr(self, f'pnet_bottleneck_{i+1}')(s)
+            c = getattr(self, f'tnet_bottleneck_{i+1}')(c)
 
         # AMM
-        theta = self.param(mask_c, c, diff_c).permute(0, 2, 1)  # (N, H*W, C+136)
+        theta = self.param(mask_c, c, diff_c).permute(0, 2, 1) # (N, H*W, C+136)
         phi = self.param(mask_s, s, diff_s)
         weight = [self.get_weight(theta[i], phi[i]) for i in range(3)]
         gamma, beta = self.simple_spade(s)
@@ -198,8 +196,7 @@ class Generator_spade(nn.Module):
 
         # bottleneck
         for i in range(3, 6):
-            cur_tnet_bottleneck = getattr(self, f'tnet_bottleneck_{i+1}')
-            c = cur_tnet_bottleneck(c)
+            c = getattr(self, f'tnet_bottleneck_{i+1}')(c)
 
         # up-sampling
         for i in range(2):

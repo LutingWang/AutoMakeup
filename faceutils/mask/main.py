@@ -11,7 +11,8 @@ import torchvision.transforms as transforms
 from .model import BiSeNet
 
 
-mapper = [0, 1, 2, 3, 4, 5, 0, 11, 12, 0, 6, 8, 7, 9, 13, 0, 0, 10, 0]
+mapper_dict = [0, 1, 2, 3, 4, 5, 0, 11, 12, 0, 6, 8, 7, 9, 13, 0, 0, 10, 0]
+mapper = np.frompyfunc(lambda x: mapper_dict[x], 1, 1)
 n_classes = 19
 save_pth = osp.split(osp.realpath(__file__))[0] + '/resnet.pth'
 
@@ -31,7 +32,6 @@ def mask(image: Image):
         image = torch.unsqueeze(image, 0)
         out = net(image)[0]
         parsing = out.squeeze(0).numpy().argmax(0)
-    for r in range(parsing.shape[0]):
-        parsing[r] = [mapper[x] for x in parsing[r]]
+    parsing = mapper(parsing)
     return Image.fromarray(parsing.astype(np.uint8))
 

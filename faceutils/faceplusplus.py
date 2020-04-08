@@ -17,24 +17,31 @@ def encode(image: 'PIL.Image') -> str:
 
 
 def beautify(image: 'PIL.Image') -> str:
+    if not isinstance(image, str):
+        image = encode(image)
     data = {
         'api_key': key,
         'api_secret': secret,
-        'image_base64': encode(image),
+        'image_base64': image,
         }
-    resp = requests.post(beautify.url, data=data)
-    return resp.json()['result']
+    resp = requests.post(beautify.url, data=data).json()
+    return resp.get('result', image)
 
 
 def rank(image: 'PIL.Image') -> int:
+    if not isinstance(image, str):
+        image = encode(image)
     data = {
         'api_key': key,
         'api_secret': secret,
-        'image_base64': encode(image),
+        'image_base64': image,
         'return_attributes': 'beauty',
+        'beauty_score_min': 71,
         }
-    resp = requests.post(rank.url, data=data)
-    scores = resp.json()['faces'][0]['attributes']['beauty']
+    resp = requests.post(rank.url, data=data).json()
+    if 'faces' not in resp.keys(): return None
+
+    scores = resp['faces'][0]['attributes']['beauty']
     return max(scores.values())
 
 

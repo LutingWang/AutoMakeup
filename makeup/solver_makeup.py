@@ -16,7 +16,7 @@ class Solver_makeupGAN(object):
         self.G.load_state_dict(
             torch.load(pwd + '/G.pth', map_location=torch.device('cpu')), 
             strict=False,
-        )
+            )
         self.G.eval()
 
     # mask attribute: 0:background 1:face 2:left-eyebrown 3:right-eyebrown 4:left-eye 5: right-eye 6: nose

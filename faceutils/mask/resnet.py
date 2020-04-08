@@ -1,11 +1,8 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.utils.model_zoo as modelzoo
 
-resnet18_url = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
+relu = nn.ReLU(inplace=True)
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -21,7 +18,6 @@ class BasicBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_chan)
         self.conv2 = conv3x3(out_chan, out_chan)
         self.bn2 = nn.BatchNorm2d(out_chan)
-        self.relu = nn.ReLU(inplace=True)
         self.downsample = None
         if in_chan != out_chan or stride != 1:
             self.downsample = nn.Sequential(
@@ -32,7 +28,7 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         residual = self.conv1(x)
-        residual = F.relu(self.bn1(residual))
+        residual = relu(self.bn1(residual))
         residual = self.conv2(residual)
         residual = self.bn2(residual)
 
@@ -41,7 +37,7 @@ class BasicBlock(nn.Module):
             shortcut = self.downsample(x)
 
         out = shortcut + residual
-        out = self.relu(out)
+        out = relu(out)
         return out
 
 
@@ -63,11 +59,10 @@ class Resnet18(nn.Module):
         self.layer2 = create_layer_basic(64, 128, bnum=2, stride=2)
         self.layer3 = create_layer_basic(128, 256, bnum=2, stride=2)
         self.layer4 = create_layer_basic(256, 512, bnum=2, stride=2)
-        self.init_weight()
 
     def forward(self, x):
         x = self.conv1(x)
-        x = F.relu(self.bn1(x))
+        x = relu(self.bn1(x))
         x = self.maxpool(x)
 
         x = self.layer1(x)
@@ -76,31 +71,12 @@ class Resnet18(nn.Module):
         feat32 = self.layer4(feat16) # 1/32
         return feat8, feat16, feat32
 
-    def init_weight(self):
-        state_dict = modelzoo.load_url(resnet18_url)
-        self_state_dict = self.state_dict()
-        for k, v in state_dict.items():
-            if 'fc' in k: continue
-            self_state_dict.update({k: v})
-        self.load_state_dict(self_state_dict)
-
-    def get_params(self):
-        wd_params, nowd_params = [], []
-        for name, module in self.named_modules():
-            if isinstance(module, (nn.Linear, nn.Conv2d)):
-                wd_params.append(module.weight)
-                if not module.bias is None:
-                    nowd_params.append(module.bias)
-            elif isinstance(module,  nn.BatchNorm2d):
-                nowd_params += list(module.parameters())
-        return wd_params, nowd_params
-
 
 if __name__ == "__main__":
+    import torch
     net = Resnet18()
     x = torch.randn(16, 3, 224, 224)
     out = net(x)
     print(out[0].size())
     print(out[1].size())
     print(out[2].size())
-    net.get_params()

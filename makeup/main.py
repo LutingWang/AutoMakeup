@@ -10,6 +10,7 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
+from memory_profiler import profile
 
 import faceutils as futils
 from .solver_makeup import Solver_makeupGAN
@@ -56,6 +57,7 @@ def copy_area(tar, src, lms):
         src[:, :, rect[1]:rect[3], rect[0]:rect[2]]
 
 
+# @profile
 def preprocess(image: Image):
     face = futils.dlib.detect(image)
     if not face:
@@ -82,10 +84,10 @@ def preprocess(image: Image):
     copy_area(mask_eyes, mask_face, lms_eye_right)
 
     mask_list = [mask_lip, mask_face, mask_eyes]
-    mask_aug = F.interpolate(torch.cat(mask_list, 0), size=64)      # (3, 1, h, w)
-    mask_re = mask_aug.repeat(1, diff.shape[1], 1, 1)  # (3, 136, 64, 64)
-    diff_re = F.interpolate(diff, size=64).repeat(3, 1, 1, 1)  # (3, 136, 64, 64)
-    diff_re = diff_re * mask_re  # (3, 136, 32, 32)
+    mask_aug = F.interpolate(torch.cat(mask_list, 0), size=64) # (3, 1, h, w)
+    mask_re = mask_aug.repeat(1, diff.shape[1], 1, 1) # (3, 136, 64, 64)
+    diff_re = F.interpolate(diff, size=64).repeat(3, 1, 1, 1) # (3, 136, 64, 64)
+    diff_re = diff_re * mask_re # (3, 136, 32, 32)
     norm = torch.norm(diff_re, dim=1, keepdim=True).repeat(1, diff_re.shape[1], 1, 1)
     norm = torch.where(norm == 0, torch.tensor(1e10), norm)
     diff_re /= norm
@@ -96,10 +98,10 @@ def preprocess(image: Image):
 
 
 fix = np.zeros((256, 256, 68 * 2))
-for i in range(256):  # 行 (y) h
-    for j in range(256):  # 列 (x) w
-        fix[i, j, :68] = i  # 赋值y
-        fix[i, j, 68:] = j  # 赋值x
-fix = fix.transpose((2, 0, 1))  # (138, h, w)
+for i in range(256): # 行 (y) h
+    for j in range(256): # 列 (x) w
+        fix[i, j, :68] = i # 赋值y
+        fix[i, j, 68:] = j # 赋值x
+fix = fix.transpose((2, 0, 1)) # (138, h, w)
 
 preprocess.eye_margin = 16
