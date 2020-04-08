@@ -40,8 +40,6 @@ def nonLocalBlock2D(
         source: "(3, 1, 64, 64)", 
         weight,
         ) -> "从source中采样，得到target的形状":
-    """return: 从source中采样，得到target的形状"""
-    assert source.shape == (3, 1, 64, 64)
     g_source = source.view(3, 1, -1) # (N, C, H*W)
     g_source = g_source.permute(0, 2, 1) # (N, H*W, C)
     y = [weight[i] @ g_source[i] for i in range(3)]
@@ -76,11 +74,11 @@ class Generator_spade(nn.Module):
             setattr(self, f'pnet_down_{i+1}', layers)
             curr_dim = curr_dim * 2
 
-        # Bottleneck. All bottlenecks share the same attention module
-        self.simple_spade = GetSPADE(curr_dim)
-
         for i in range(3):
             setattr(self, f'pnet_bottleneck_{i+1}', ResidualBlock(dim=curr_dim, pnet=True))
+
+        # Bottleneck. All bottlenecks share the same attention module
+        self.simple_spade = GetSPADE(curr_dim)
 
         # --------------------------------------- TNet ---------------------------------------
 
@@ -121,12 +119,6 @@ class Generator_spade(nn.Module):
             gamma_s: "(1, c, h, w)", 
             beta_s: "(1, c, h, w)",
             ):
-        """
-        feature size: (1, c, h, w)
-        mask_c(s): (3, 1, h, w)
-        diff_c: (1, 138, 256, 256)
-        return: (1, c, h, w)
-        """
         gamma_s = gamma_s.repeat(3, 1, 1, 1) * mask_s # (3, c, h, w) 每个部位分别提取，变成batch
         beta_s = beta_s.repeat(3, 1, 1, 1) * mask_s
 
@@ -136,10 +128,6 @@ class Generator_spade(nn.Module):
 
     @staticmethod
     def param(mask, fea: "(1, 256, 64, 64)", diff: "(3, 136, 32, 32)"):
-        """
-        feature size: (1, 256, 64, 64)
-        diff: (3, 136, 32, 32)
-        """
         mask_re = mask.repeat(1, 256, 1, 1) # (3, c, h, w)
         fea = fea.repeat(3, 1, 1, 1) # (3, c, h, w)
         fea = fea * mask_re # (3, c, h, w) 最后做atten的fea。3代表3个部位。
