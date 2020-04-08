@@ -162,7 +162,7 @@ class Generator_spade(nn.Module):
         return weight
 
     @torch.no_grad()
-    def forward_atten(self, c: "(b, c, h, w)", s, mask_c, mask_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
+    def forward_atten(self, c: "(b, c, h, w)", s, mask_c, mask_s, diff_c, diff_s):
         """attention version
         c: (b, c, h, w)
         mask_list_c: lip, skin, eye. (b, 1, h, w)
@@ -176,33 +176,29 @@ class Generator_spade(nn.Module):
 
         # down-sampling
         for i in range(2):
-            if gamma is None:
-                s = getattr(self, f'pnet_down_{i+1}')(s)
+            s = getattr(self, f'pnet_down_{i+1}')(s)
             c = getattr(self, f'tnet_down_conv_{i+1}')(c)
             c = getattr(self, f'tnet_down_spade_{i+1}')(c)
             c = getattr(self, f'tnet_down_relu_{i+1}')(c)
 
         # bottleneck
-        for i in range(6):
-            if gamma is None and i <= 2:
-                cur_pnet_bottleneck = getattr(self, f'pnet_bottleneck_{i+1}')
+        for i in range(3):
+            cur_pnet_bottleneck = getattr(self, f'pnet_bottleneck_{i+1}')
             cur_tnet_bottleneck = getattr(self, f'tnet_bottleneck_{i+1}')
+            s = cur_pnet_bottleneck(s)
+            c = cur_tnet_bottleneck(c)
 
-            # get s_pnet from p and transform
-            if i == 3:
-                if gamma is None:
-                    theta = self.param(mask_c, c, diff_c).permute(0, 2, 1)  # (N, H*W, C+136)
-                    phi = self.param(mask_s, s, diff_s)
-                    weight = [self.get_weight(theta[i], phi[i]) for i in range(3)]
-                    gamma, beta = self.simple_spade(s)
-                    gamma, beta = self.atten_feature(mask_s, weight, gamma, beta)
-                    if ret:
-                        return [gamma, beta]
+        # AMM
+        theta = self.param(mask_c, c, diff_c).permute(0, 2, 1)  # (N, H*W, C+136)
+        phi = self.param(mask_s, s, diff_s)
+        weight = [self.get_weight(theta[i], phi[i]) for i in range(3)]
+        gamma, beta = self.simple_spade(s)
+        gamma, beta = self.atten_feature(mask_s, weight, gamma, beta)
+        c = c * (1 + gamma) + beta
 
-                c = c * (1 + gamma) + beta
-
-            if gamma is None and i <= 2:
-                s = cur_pnet_bottleneck(s)
+        # bottleneck
+        for i in range(3, 6):
+            cur_tnet_bottleneck = getattr(self, f'tnet_bottleneck_{i+1}')
             c = cur_tnet_bottleneck(c)
 
         # up-sampling

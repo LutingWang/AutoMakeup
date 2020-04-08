@@ -24,12 +24,7 @@ class Solver_makeupGAN(object):
 
     def test(self, real_A, mask_A, diff_A, real_B, mask_B, diff_B):
         """A->src, B->ref"""
-        with torch.no_grad():
-            prama = self.G.forward_atten(real_A, real_B, mask_A, mask_B, 
-                                         diff_A, diff_B, ret=True)
-            fake_A = self.G.forward_atten(real_A, real_B, mask_A, mask_B, 
-                                          diff_A, diff_B, gamma=prama[0], beta=prama[1])
-        fake_A = fake_A.squeeze(0)
+        fake_A = self.G.forward_atten(real_A, real_B, mask_A, mask_B, diff_A, diff_B)[0]
 
         # normalize
         min_, max_ = fake_A.min(), fake_A.max()
