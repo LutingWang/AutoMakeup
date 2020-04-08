@@ -173,7 +173,8 @@ class Generator_spade(nn.Module):
         weight.data = np.divide(weight.data, sums.data)
         return weight
 
-    def forward_atten(self, c, s, mask_c, mask_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
+    @torch.no_grad()
+    def forward_atten(self, c: "(b, c, h, w)", s, mask_c, mask_s, diff_c, diff_s, gamma=None, beta=None, ret=False):
         """attention version
         c: (b, c, h, w)
         mask_list_c: lip, skin, eye. (b, 1, h, w)
