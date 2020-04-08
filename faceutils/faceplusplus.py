@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 from io import BytesIO
-import time
 
 import base64
 import json

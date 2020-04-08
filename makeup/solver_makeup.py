@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import time
 import os.path as osp
 pwd = osp.split(osp.realpath(__file__))[0]
 
@@ -25,7 +24,6 @@ class Solver_makeupGAN(object):
 
     def test(self, real_A, mask_A, diff_A, real_B, mask_B, diff_B):
         """A->src, B->ref"""
-        print(time.time())
         with torch.no_grad():
             prama = self.G.forward_atten(real_A, real_B, mask_A, mask_B, 
                                          diff_A, diff_B, ret=True)

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import time
 from io import BytesIO
 
 import base64
@@ -12,10 +11,9 @@ import faceutils as futils
 import makeup
 
 refs = []
-for i in range(8):
+for i in range(1):
     with Image.open(f'refs/{i}.png') as image:
         refs.append(makeup.preprocess(image))
-        # refs.append(None)
 
 app = Flask(__name__)
 
@@ -26,9 +24,7 @@ def transfer():
     model = data.get('model')
     image = base64.b64decode(data.get('file'))
     image = Image.open(BytesIO(image))
-    print(time.time())
     image = makeup.solver.test(*(makeup.preprocess(image)), *(refs[model]))
-    print(time.time())
     return futils.fpp.beautify(image)
 
 
@@ -40,7 +36,6 @@ def exchange():
     images = [makeup.preprocess(image) for image in images]
     images = [makeup.solver.test(*(images[0]), *(images[1])), 
               makeup.solver.test(*(images[1]), *(images[0]))]
-    # images = [images[1], images[0]]
     images = [futils.fpp.beautify(image) for image in images]
     return json.dumps(images)
 
@@ -48,8 +43,10 @@ def exchange():
 @app.route('/test/', methods=['POST'])
 def test():
     image = json.loads(request.get_data().decode()).get('file')
+    src_score = futils.fpp.rank(image)
     image = Image.open(BytesIO(base64.b64decode(image)))
-    max_score = -1
+    max_score = src_score
+    result = image
     for model in refs:
         temp = makeup.solver.test(*(makeup.preprocess(image)), *(model))
         score = futils.fpp.rank(temp)

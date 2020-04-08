@@ -15,28 +15,37 @@ def detect(image: Image) -> 'faces':
 
 
 def crop(image: Image, face) -> (Image, 'face'):
-    center = face.center()
     width, height = image.size
-    if width > height:
-        left = int(center.x - height / 2)
-        right = int(center.x + height / 2)
-        if left < 0:
-            left, right = 0, height
-        elif right > width:
-            left, right = width - height, width
-        image = image.crop((left, 0, right, height))
-        face = dlib.rectangle(face.left() - left, face.top(), 
-                              face.right() - left, face.bottom())
-    elif width < height:
-        top = int(center.y - width / 2)
-        bottom = int(center.y + width / 2)
-        if top < 0:
-            top, bottom = 0, width
-        elif bottom > height:
-            top, bottom = height - width, height
-        image = image.crop((0, top, width, bottom))
-        face = dlib.rectangle(face.left(), face.top() - top, 
-                              face.right(), face.bottom() - top)
+    size = max(face.width(), face.height()) * 1.3
+    size = min(width, height, int(size)) // 2
+    center = face.center()
+
+    left = center.x - size
+    right = center.x + size
+    if left < 0:
+        right -= left
+        left = 0
+    elif right > width:
+        left -= right - width
+        right = width
+
+    top = center.y - size
+    bottom = center.y + size
+    if top < 0:
+        bottom -= top
+        top = 0
+    elif bottom > height:
+        top -= bottom - height
+        bottom = height
+
+    image = image.crop((left, top, right, bottom))
+    face = dlib.rectangle(
+        face.left() - left, 
+        face.top() - top,
+        face.right() - left, 
+        face.bottom() - top,
+        )
+
     return image, face
 
 
