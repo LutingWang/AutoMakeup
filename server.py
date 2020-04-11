@@ -11,9 +11,13 @@ import faceutils as futils
 import makeup
 
 refs = []
-for i in range(1):
+for i in range(3):
     with Image.open(f'refs/{i}.png') as image:
-        refs.append(makeup.preprocess(image))
+        _, prep = makeup.preprocess(image)
+        refs.append(prep)
+
+test_result = Image.open('assets/test_result.png')
+anchor = (200, 500)
 
 app = Flask(__name__)
 
@@ -22,38 +26,63 @@ app = Flask(__name__)
 def transfer():
     data = json.loads(request.get_data().decode())
     model = data.get('model')
-    image = base64.b64decode(data.get('file'))
-    image = Image.open(BytesIO(image))
-    image = makeup.solver.test(*(makeup.preprocess(image)), *(refs[model]))
-    return futils.fpp.beautify(image)
+    image = futils.fpp.decode(data.get('file'))
+    box, prep = makeup.preprocess(image)
+    result = makeup.solver.test(*prep, *refs[model])
+    result = futils.fpp.beautify(result) # base64
+    result = futils.fpp.decode(result)
+    result = futils.merge(image, result, box)
+    return futils.fpp.encode(result)
 
 
 @app.route('/exchange/', methods=['POST'])
 def exchange():
     data = json.loads(request.get_data().decode())
-    images = [base64.b64decode(image) for image in data]
-    images = [Image.open(BytesIO(image)) for image in images]
-    images = [makeup.preprocess(image) for image in images]
-    images = [makeup.solver.test(*(images[0]), *(images[1])), 
-              makeup.solver.test(*(images[1]), *(images[0]))]
-    images = [futils.fpp.beautify(image) for image in images]
-    return json.dumps(images)
+    images = [futils.fpp.decode(image) for image in data]
+    boxes, preps = [], []
+    for image in images:
+        box, prep = makeup.preprocess(image)
+        boxes.append(box)
+        preps.append(prep)
+    results = [makeup.solver.test(*preps[0], *preps[1]), 
+              makeup.solver.test(*preps[1], *preps[0])]
+    for i in range(2):
+        results[i] = futils.fpp.beautify(results[i]) # base64
+        results[i] = futils.fpp.decode(results[i])
+        results[i] = futils.merge(images[i], results[i], boxes[i])
+        results[i] = futils.fpp.encode(results[i])
+    return json.dumps(results)
 
 
 @app.route('/test/', methods=['POST'])
 def test():
     image = json.loads(request.get_data().decode()).get('file')
     src_score = futils.fpp.rank(image)
-    image = Image.open(BytesIO(base64.b64decode(image)))
+    image = futils.fpp.decode(image)
+    _, prep = makeup.preprocess(image)
+    
+    model_id = -1
     max_score = src_score
     result = image
-    for model in refs:
-        temp = makeup.solver.test(*(makeup.preprocess(image)), *(model))
+    for i, model in enumerate(refs):
+        temp = makeup.solver.test(*prep, *model)
         score = futils.fpp.rank(temp)
         if score > max_score:
+            model_id = i
             max_score = score
             result = temp
-    return { 'file': futils.fpp.beautify(result), 'score': score }
+    score = (max_score - src_score) / (100 - src_score) * 100
+
+    result = futils.fpp.beautify(result) # base64
+    result = futils.fpp.decode(result)
+    bg = test_result.copy()
+    bg.paste(result, box=anchor)
+    # return {
+    #     'file': futils.fpp.encode(bg),
+    #     'score': score,
+    #     'id': model_id,
+    #     }
+    return futils.fpp.encode(bg)
 
 
 if __name__ == '__main__':

@@ -6,14 +6,22 @@ import base64
 import json
 import requests
 
+from PIL import Image
+
 key = "-fd9YqPnrLnmugQGAhQoimCkQd0t8N8L"
 secret = "0GLyRIHDnrjKSlDuflLPO8a6U32hyDUy"
 
 
-def encode(image: 'PIL.Image') -> str:
+def encode(image: Image) -> str:
     with BytesIO() as output_buf:
         image.save(output_buf, format='PNG')
         return base64.b64encode(output_buf.getvalue()).decode('utf-8')
+
+
+def decode(image: 'base64') -> Image:
+    image = base64.b64decode(image)
+    image = Image.open(BytesIO(image))
+    return image
 
 
 def beautify(image: 'PIL.Image') -> str:

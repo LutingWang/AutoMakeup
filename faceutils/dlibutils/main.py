@@ -38,7 +38,8 @@ def crop(image: Image, face) -> (Image, 'face'):
         top -= bottom - height
         bottom = height
 
-    image = image.crop((left, top, right, bottom))
+    box = (left, top, right, bottom)
+    image = image.crop(box)
     face = dlib.rectangle(
         face.left() - left, 
         face.top() - top,
@@ -46,7 +47,7 @@ def crop(image: Image, face) -> (Image, 'face'):
         face.bottom() - top,
         )
 
-    return image, face
+    return image, face, box
 
 
 def landmarks(image: Image, face):

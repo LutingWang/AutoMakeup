@@ -63,7 +63,7 @@ def preprocess(image: Image):
     if not face:
         raise RuntimeException("no faces detected")
     face = face[0]
-    image, face = futils.dlib.crop(image, face)
+    image, face, box = futils.dlib.crop(image, face)
 
     lms = futils.dlib.landmarks(image, face) * 256 / image.width
     lms = lms.round()
@@ -94,7 +94,7 @@ def preprocess(image: Image):
 
     image = image.resize((256, 256), Image.ANTIALIAS)
     real = transform(image).unsqueeze(0)
-    return [real, mask_aug, diff_re]
+    return box, [real, mask_aug, diff_re]
 
 
 fix = np.zeros((256, 256, 68 * 2))
