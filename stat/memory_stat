@@ -1,0 +1,167 @@
+Filename: /home/ljy/AutoMakeup/makeup/net.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   138    742.9 MiB    742.9 MiB       @staticmethod
+   139                                 @profile
+   140                                 def get_weight(theta, phi):
+   141                             
+   142    743.6 MiB      0.0 MiB           def ones(mat):
+   143    743.6 MiB      0.0 MiB               result = mat.copy()
+   144    743.6 MiB      0.0 MiB               result.data = np.ones_like(result.data)
+   145    743.6 MiB      0.0 MiB               return result
+   146                             
+   147    742.9 MiB      0.0 MiB           theta = sp.csr_matrix(theta)
+   148    742.9 MiB      0.0 MiB           phi = sp.csr_matrix(phi)
+   149    742.9 MiB      0.0 MiB           weight = theta @ phi
+   150    742.9 MiB      0.0 MiB           weight *= 200
+   151                                     
+   152    742.9 MiB      0.0 MiB           maximums = weight.max(axis=-1)
+   153    742.9 MiB      0.0 MiB           maximums += ones(maximums) * 0.01 # max will be subtracted to -0.01, otherwise omitted in sp
+   154                                     
+   155    742.9 MiB      0.0 MiB           maximums = np.array(maximums.todense().squeeze())[0]
+   156    742.9 MiB      0.0 MiB           maximums = sp.diags(maximums, format='coo')
+   157    742.9 MiB      0.0 MiB           weight -= maximums @ ones(weight)
+   158    743.6 MiB      0.8 MiB           weight.data = np.exp(weight.data)
+   159                                     
+   160    743.6 MiB      0.0 MiB           sums = np.array(weight.sum(axis=-1).squeeze())[0]
+   161    743.6 MiB      0.0 MiB           sums = sp.diags(sums, format='coo')
+   162    743.6 MiB      0.0 MiB           sums *= ones(weight)
+   163    743.6 MiB      0.0 MiB           weight.data = np.divide(weight.data, sums.data)
+   164    743.6 MiB      0.0 MiB           return weight
+
+
+Filename: /home/ljy/AutoMakeup/makeup/net.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   138    743.6 MiB    743.6 MiB       @staticmethod
+   139                                 @profile
+   140                                 def get_weight(theta, phi):
+   141                             
+   142    785.4 MiB      0.0 MiB           def ones(mat):
+   143    785.4 MiB     14.3 MiB               result = mat.copy()
+   144    785.4 MiB     13.8 MiB               result.data = np.ones_like(result.data)
+   145    785.4 MiB      0.0 MiB               return result
+   146                             
+   147    743.6 MiB      0.0 MiB           theta = sp.csr_matrix(theta)
+   148    743.6 MiB      0.0 MiB           phi = sp.csr_matrix(phi)
+   149    743.6 MiB      0.0 MiB           weight = theta @ phi
+   150    743.6 MiB      0.0 MiB           weight *= 200
+   151                                     
+   152    743.6 MiB      0.0 MiB           maximums = weight.max(axis=-1)
+   153    743.6 MiB      0.0 MiB           maximums += ones(maximums) * 0.01 # max will be subtracted to -0.01, otherwise omitted in sp
+   154                                     
+   155    743.6 MiB      0.0 MiB           maximums = np.array(maximums.todense().squeeze())[0]
+   156    743.6 MiB      0.0 MiB           maximums = sp.diags(maximums, format='coo')
+   157    800.8 MiB     29.1 MiB           weight -= maximums @ ones(weight)
+   158    785.4 MiB      0.0 MiB           weight.data = np.exp(weight.data)
+   159                                     
+   160    785.4 MiB      0.0 MiB           sums = np.array(weight.sum(axis=-1).squeeze())[0]
+   161    785.4 MiB      0.0 MiB           sums = sp.diags(sums, format='coo')
+   162    798.9 MiB     13.5 MiB           sums *= ones(weight)
+   163    798.9 MiB      0.0 MiB           weight.data = np.divide(weight.data, sums.data)
+   164    798.9 MiB      0.0 MiB           return weight
+
+
+Filename: /home/ljy/AutoMakeup/makeup/net.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   138    798.9 MiB    798.9 MiB       @staticmethod
+   139                                 @profile
+   140                                 def get_weight(theta, phi):
+   141                             
+   142    798.9 MiB      0.0 MiB           def ones(mat):
+   143    798.9 MiB      0.0 MiB               result = mat.copy()
+   144    798.9 MiB      0.0 MiB               result.data = np.ones_like(result.data)
+   145    798.9 MiB      0.0 MiB               return result
+   146                             
+   147    798.9 MiB      0.0 MiB           theta = sp.csr_matrix(theta)
+   148    798.9 MiB      0.0 MiB           phi = sp.csr_matrix(phi)
+   149    798.9 MiB      0.0 MiB           weight = theta @ phi
+   150    798.9 MiB      0.0 MiB           weight *= 200
+   151                                     
+   152    798.9 MiB      0.0 MiB           maximums = weight.max(axis=-1)
+   153    798.9 MiB      0.0 MiB           maximums += ones(maximums) * 0.01 # max will be subtracted to -0.01, otherwise omitted in sp
+   154                                     
+   155    798.9 MiB      0.0 MiB           maximums = np.array(maximums.todense().squeeze())[0]
+   156    798.9 MiB      0.0 MiB           maximums = sp.diags(maximums, format='coo')
+   157    798.9 MiB      0.0 MiB           weight -= maximums @ ones(weight)
+   158    798.9 MiB      0.0 MiB           weight.data = np.exp(weight.data)
+   159                                     
+   160    798.9 MiB      0.0 MiB           sums = np.array(weight.sum(axis=-1).squeeze())[0]
+   161    798.9 MiB      0.0 MiB           sums = sp.diags(sums, format='coo')
+   162    798.9 MiB      0.0 MiB           sums *= ones(weight)
+   163    798.9 MiB      0.0 MiB           weight.data = np.divide(weight.data, sums.data)
+   164    798.9 MiB      0.0 MiB           return weight
+
+
+Filename: /home/ljy/AutoMakeup/makeup/net.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   166    606.8 MiB    606.8 MiB       @torch.no_grad()
+   167                                 @profile
+   168                                 def forward_atten(self, c: "(b, c, h, w)", s, mask_c, mask_s, diff_c, diff_s):
+   169                                     """attention version
+   170                                     c: (b, c, h, w)
+   171                                     mask_list_c: lip, skin, eye. (b, 1, h, w)
+   172                                     """
+   173    642.1 MiB     35.3 MiB           s = self.pnet_in(s)
+   174                             
+   175                                     # forward c in tnet
+   176    658.1 MiB     16.0 MiB           c = self.tnet_in_conv(c)
+   177    658.1 MiB      0.0 MiB           c = self.tnet_in_spade(c)
+   178    658.1 MiB      0.0 MiB           c = self.tnet_in_relu(c)
+   179                             
+   180                                     # down-sampling
+   181    666.1 MiB      0.0 MiB           for i in range(2):
+   182    666.1 MiB      8.0 MiB               s = getattr(self, f'pnet_down_{i+1}')(s)
+   183    666.1 MiB      0.0 MiB               c = getattr(self, f'tnet_down_conv_{i+1}')(c)
+   184    666.1 MiB      0.0 MiB               c = getattr(self, f'tnet_down_spade_{i+1}')(c)
+   185    666.1 MiB      0.0 MiB               c = getattr(self, f'tnet_down_relu_{i+1}')(c)
+   186                             
+   187                                     # bottleneck
+   188    666.1 MiB      0.0 MiB           for i in range(3):
+   189    666.1 MiB      0.0 MiB               s = getattr(self, f'pnet_bottleneck_{i+1}')(s)
+   190    666.1 MiB      0.0 MiB               c = getattr(self, f'tnet_bottleneck_{i+1}')(c)
+   191                             
+   192                                     # AMM
+   193    712.5 MiB     46.4 MiB           theta = self.param(mask_c, c, diff_c).permute(0, 2, 1) # (N, H*W, C+136)
+   194    742.9 MiB     30.4 MiB           phi = self.param(mask_s, s, diff_s)
+   195    798.9 MiB     55.3 MiB           weight = [self.get_weight(theta[i], phi[i]) for i in range(3)]
+   196    798.9 MiB      0.0 MiB           gamma, beta = self.simple_spade(s)
+   197    798.9 MiB      0.0 MiB           gamma, beta = self.atten_feature(mask_s, weight, gamma, beta)
+   198    798.9 MiB      0.0 MiB           c = c * (1 + gamma) + beta
+   199                             
+   200                                     # bottleneck
+   201    798.9 MiB      0.0 MiB           for i in range(3, 6):
+   202    798.9 MiB      0.0 MiB               c = getattr(self, f'tnet_bottleneck_{i+1}')(c)
+   203                             
+   204                                     # up-sampling
+   205    799.4 MiB      0.0 MiB           for i in range(2):
+   206    799.4 MiB      0.5 MiB               c = getattr(self, f'tnet_up_conv_{i+1}')(c)
+   207    799.4 MiB      0.0 MiB               c = getattr(self, f'tnet_up_spade_{i+1}')(c)
+   208    799.4 MiB      0.0 MiB               c = getattr(self, f'tnet_up_relu_{i+1}')(c)
+   209                             
+   210    799.4 MiB      0.0 MiB           c = self.tnet_out(c)
+   211    799.4 MiB      0.0 MiB           return c
+
+
+Filename: /home/ljy/AutoMakeup/makeup/solver_makeup.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    26    606.8 MiB    606.8 MiB       @profile
+    27                                 def test(self, real_A, mask_A, diff_A, real_B, mask_B, diff_B):
+    28                                     """A->src, B->ref"""
+    29    799.4 MiB    192.6 MiB           fake_A = self.G.forward_atten(real_A, real_B, mask_A, mask_B, diff_A, diff_B)[0]
+    30                             
+    31                                     # normalize
+    32    799.4 MiB      0.0 MiB           min_, max_ = fake_A.min(), fake_A.max()
+    33    799.4 MiB      0.0 MiB           fake_A.add_(-min_).div_(max_ - min_ + 1e-5)
+    34                             
+    35    799.4 MiB      0.0 MiB           return ToPILImage()(fake_A)
+
+

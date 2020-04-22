@@ -5,6 +5,7 @@ pwd = osp.split(osp.realpath(__file__))[0]
 
 import torch
 from torchvision.transforms import ToPILImage
+from memory_profiler import profile
 
 from . import net
 
@@ -22,6 +23,7 @@ class Solver_makeupGAN(object):
     # mask attribute: 0:background 1:face 2:left-eyebrown 3:right-eyebrown 4:left-eye 5: right-eye 6: nose
     # 7: upper-lip 8: teeth 9: under-lip 10:hair 11: left-ear 12: right-ear 13: neck
 
+    @profile
     def test(self, real_A, mask_A, diff_A, real_B, mask_B, diff_B):
         """A->src, B->ref"""
         fake_A = self.G.forward_atten(real_A, real_B, mask_A, mask_B, diff_A, diff_B)[0]

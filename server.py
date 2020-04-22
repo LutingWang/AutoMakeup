@@ -4,20 +4,20 @@ from io import BytesIO
 
 import base64
 import json
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
 from flask import Flask, request, Response
 
 import faceutils as futils
 import makeup
 
-refs = []
-for i in range(3):
-    with Image.open(f'refs/{i}.png') as image:
-        _, prep = makeup.preprocess(image)
-        refs.append(prep)
-
-test_result = Image.open('assets/test_result.png')
-anchor = (200, 500)
+refs, labels = [], []
+with open('refs/name.json', 'r') as f:
+    entries = json.load(f)
+    for entry in entries:
+        labels.append(entry['name'])
+        with Image.open(f'refs/' + entry['src']) as image:
+            _, prep = makeup.preprocess(image)
+            refs.append(prep)
 
 app = Flask(__name__)
 
@@ -29,8 +29,8 @@ def transfer():
     image = futils.fpp.decode(data.get('file'))
     box, prep = makeup.preprocess(image)
     result = makeup.solver.test(*prep, *refs[model])
-    result = futils.fpp.beautify(result) # base64
-    result = futils.fpp.decode(result)
+    # result = futils.fpp.beautify(result) # base64
+    # result = futils.fpp.decode(result)
     result = futils.merge(image, result, box)
     return futils.fpp.encode(result)
 
@@ -47,11 +47,16 @@ def exchange():
     results = [makeup.solver.test(*preps[0], *preps[1]), 
               makeup.solver.test(*preps[1], *preps[0])]
     for i in range(2):
-        results[i] = futils.fpp.beautify(results[i]) # base64
-        results[i] = futils.fpp.decode(results[i])
+        # results[i] = futils.fpp.beautify(results[i]) # base64
+        # results[i] = futils.fpp.decode(results[i])
         results[i] = futils.merge(images[i], results[i], boxes[i])
         results[i] = futils.fpp.encode(results[i])
     return json.dumps(results)
+
+
+bg = Image.open('assets/test_result.png')
+font_num = ImageFont.truetype('assets/font.otf', 200)
+font_label = ImageFont.truetype('assets/font.otf', 140)
 
 
 @app.route('/test/', methods=['POST'])
@@ -71,18 +76,28 @@ def test():
             model_id = i
             max_score = score
             result = temp
-    score = (max_score - src_score) / (100 - src_score) * 100
+    score = (max_score - src_score) / (100 - src_score) * 39
+    score += 61
+    score = int(score)
+    # result = futils.fpp.beautify(result) # base64
+    # result = futils.fpp.decode(result)
 
-    result = futils.fpp.beautify(result) # base64
-    result = futils.fpp.decode(result)
-    bg = test_result.copy()
-    bg.paste(result, box=anchor)
-    # return {
-    #     'file': futils.fpp.encode(bg),
-    #     'score': score,
-    #     'id': model_id,
-    #     }
-    return futils.fpp.encode(bg)
+    # draw result image
+    result = result.resize((1016, 1016), Image.ANTIALIAS)
+    canvas = Image.new(size=bg.size, mode='RGBA', color=(255, 255, 255))
+    canvas.paste(result, box=(392, 582))
+    canvas.paste(bg, mask=bg)
+    draw = ImageDraw.Draw(canvas)
+    if model_id == -1:
+        draw.text((88, 162), '∞', font=font_num, fill='#ffffff')
+        label = "绝美素颜"
+    else:
+        draw.text((88, 162), str(score) + '%', font=font_num, fill='#ffffff')
+        label = labels[model_id]
+    for i, c in enumerate(label):
+        draw.text((119, 655 + i * 153), c, font=font_label, fill='#ff9181')
+        draw.text((110, 647 + i * 153), c, font=font_label, fill='#ffffff')
+    return futils.fpp.encode(canvas)
 
 
 if __name__ == '__main__':

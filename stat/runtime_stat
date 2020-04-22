@@ -1,0 +1,278 @@
+         12281 function calls (12154 primitive calls) in 6.362 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        9    2.390    0.266    2.390    0.266 {built-in method scipy.sparse._sparsetools.csr_matmat_pass2}
+       27    1.745    0.065    1.745    0.065 {built-in method conv2d}
+        9    1.050    0.117    1.050    0.117 {built-in method scipy.sparse._sparsetools.csr_matmat_pass1}
+        3    0.394    0.131    4.136    1.379 net.py:138(get_weight)
+        2    0.215    0.107    0.215    0.107 {built-in method conv_transpose2d}
+       26    0.168    0.006    0.168    0.006 {built-in method instance_norm}
+       12    0.137    0.011    0.137    0.011 {method 'nonzero' of 'numpy.ndarray' objects}
+        6    0.037    0.006    0.037    0.006 {built-in method scipy.sparse._sparsetools.csr_matvec}
+        3    0.036    0.012    0.036    0.012 {built-in method scipy.sparse._sparsetools.csr_sort_indices}
+        3    0.033    0.011    0.033    0.011 {built-in method scipy.sparse._sparsetools.csr_minus_csr}
+       21    0.021    0.001    0.170    0.008 coo.py:126(__init__)
+       33    0.019    0.001    0.019    0.001 {method 'copy' of 'numpy.ndarray' objects}
+        2    0.013    0.006    0.032    0.016 net.py:130(param)
+        2    0.010    0.005    0.010    0.005 {built-in method cat}
+        9    0.009    0.001    1.371    0.152 net.py:23(forward)
+       18    0.009    0.001    0.009    0.001 {built-in method scipy.sparse._sparsetools.coo_tocsr}
+       17    0.009    0.001    0.009    0.001 {built-in method relu_}
+  523/487    0.009    0.000    0.010    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        6    0.008    0.001    0.008    0.001 {method 'repeat' of 'torch._C._TensorBase' objects}
+       87    0.006    0.000    0.006    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+        3    0.006    0.002    0.006    0.002 {built-in method scipy.sparse._sparsetools.csr_sum_duplicates}
+      981    0.005    0.000    0.005    0.000 {built-in method numpy.array}
+        6    0.003    0.001    0.003    0.001 {method 'reduceat' of 'numpy.ufunc' objects}
+        1    0.002    0.002    6.358    6.358 net.py:165(forward_atten)
+        6    0.002    0.000    0.002    0.000 data.py:52(__imul__)
+        1    0.002    0.002    0.002    0.002 {method 'tobytes' of 'numpy.ndarray' objects}
+       66    0.001    0.000    0.004    0.000 compressed.py:133(check_format)
+    96/29    0.001    0.000    2.150    0.074 module.py:531(__call__)
+      189    0.001    0.000    0.004    0.000 sputils.py:120(get_index_dtype)
+      378    0.001    0.000    0.001    0.000 getlimits.py:497(__init__)
+        1    0.001    0.001    0.001    0.001 {built-in method tanh}
+       21    0.001    0.000    0.012    0.001 coo.py:261(_check)
+    66/51    0.001    0.000    0.185    0.004 compressed.py:25(__init__)
+        1    0.001    0.001    6.359    6.359 grad_mode.py:46(decorate_no_grad)
+        6    0.001    0.000    0.002    0.000 dia.py:348(tocoo)
+       75    0.000    0.000    0.001    0.000 compressed.py:1077(prune)
+       26    0.000    0.000    0.168    0.006 instancenorm.py:44(forward)
+       93    0.000    0.000    0.001    0.000 sputils.py:266(check_shape)
+       18    0.000    0.000    0.012    0.001 coo.py:368(tocsr)
+       13    0.000    0.000    1.700    0.131 container.py:90(forward)
+      202    0.000    0.000    0.000    0.000 module.py:571(__getattr__)
+       69    0.000    0.000    0.000    0.000 {built-in method numpy.empty}
+      345    0.000    0.000    0.001    0.000 <__array_function__ internals>:2(can_cast)
+      726    0.000    0.000    0.005    0.000 _asarray.py:16(asarray)
+       60    0.000    0.000    0.000    0.000 sputils.py:209(isshape)
+      387    0.000    0.000    0.001    0.000 base.py:243(nnz)
+        9    0.000    0.000    3.443    0.383 compressed.py:486(_mul_sparse_matrix)
+       96    0.000    0.000    0.000    0.000 {built-in method torch._C._get_tracing_state}
+       91    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+      572    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+     1387    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        1    0.000    0.000    0.000    0.000 {method 'min' of 'torch._C._TensorBase' objects}
+      312    0.000    0.000    0.000    0.000 compressed.py:105(getnnz)
+        9    0.000    0.000    0.000    0.000 function_base.py:1147(diff)
+       26    0.000    0.000    0.168    0.006 functional.py:1674(instance_norm)
+       18    0.000    0.000    3.482    0.193 base.py:455(__mul__)
+       27    0.000    0.000    1.745    0.065 conv.py:334(conv2d_forward)
+        6    0.000    0.000    0.003    0.000 construct.py:65(diags)
+        1    0.000    0.000    0.000    0.000 {method 'byte' of 'torch._C._TensorBase' objects}
+       75    0.000    0.000    0.000    0.000 coo.py:235(getnnz)
+        1    0.000    0.000    0.000    0.000 {method 'mul' of 'torch._C._TensorBase' objects}
+        3    0.000    0.000    0.044    0.015 data.py:162(_min_or_max_axis)
+        1    0.000    0.000    0.000    0.000 {method 'max' of 'torch._C._TensorBase' objects}
+       87    0.000    0.000    0.000    0.000 sputils.py:92(to_native)
+      189    0.000    0.000    0.000    0.000 getlimits.py:508(min)
+       54    0.000    0.000    0.000    0.000 numeric.py:1782(isscalar)
+        1    0.000    0.000    4.136    4.136 net.py:194(<listcomp>)
+       27    0.000    0.000    1.745    0.065 conv.py:344(forward)
+      279    0.000    0.000    0.000    0.000 sputils.py:279(<genexpr>)
+        2    0.000    0.000    0.000    0.000 {built-in method tensor}
+        1    0.000    0.000    0.038    0.038 net.py:116(atten_feature)
+        6    0.000    0.000    0.035    0.006 compressed.py:1147(_binopt)
+       93    0.000    0.000    0.000    0.000 base.py:72(__init__)
+       21    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}
+      150    0.000    0.000    0.000    0.000 _util.py:129(_prune_array)
+        1    0.000    0.000    6.362    6.362 solver_makeup.py:25(test)
+        1    0.000    0.000    0.000    0.000 {method 'div_' of 'torch._C._TensorBase' objects}
+       19    0.000    0.000    0.000    0.000 {method 'numpy' of 'torch._C._TensorBase' objects}
+       87    0.000    0.000    0.000    0.000 {method 'newbyteorder' of 'numpy.dtype' objects}
+      129    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+      438    0.000    0.000    0.000    0.000 base.py:86(get_shape)
+        6    0.000    0.000    0.000    0.000 arraysetops.py:297(_unique1d)
+       53    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        2    0.000    0.000    0.037    0.019 net.py:46(<listcomp>)
+        6    0.000    0.000    0.001    0.000 dia.py:78(__init__)
+       93    0.000    0.000    0.000    0.000 data.py:22(__init__)
+       33    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:416(parent)
+        3    0.000    0.000    0.000    0.000 {built-in method scipy.sparse._sparsetools.csr_plus_csr}
+       54    0.000    0.000    0.000    0.000 sputils.py:182(isscalarlike)
+        6    0.000    0.000    0.000    0.000 {built-in method _warnings.warn}
+      189    0.000    0.000    0.000    0.000 getlimits.py:521(max)
+        2    0.000    0.000    0.038    0.019 net.py:40(nonLocalBlock2D)
+        4    0.000    0.000    0.000    0.000 {method 'view' of 'torch._C._TensorBase' objects}
+        6    0.000    0.000    0.004    0.001 compressed.py:610(_minor_reduce)
+       99    0.000    0.000    0.000    0.000 base.py:1190(isspmatrix)
+       51    0.000    0.000    0.000    0.000 {method 'astype' of 'numpy.ndarray' objects}
+        6    0.000    0.000    0.000    0.000 {built-in method numpy.arange}
+      205    0.000    0.000    0.000    0.000 {method 'values' of 'collections.OrderedDict' objects}
+       33    0.000    0.000    0.000    0.000 sputils.py:21(upcast)
+        3    0.000    0.000    0.003    0.001 compressed.py:581(sum)
+       38    0.000    0.000    0.000    0.000 {built-in method _abc._abc_instancecheck}
+        1    0.000    0.000    0.000    0.000 {method 'add_' of 'torch._C._TensorBase' objects}
+       27    0.000    0.000    0.012    0.000 base.py:299(asformat)
+        1    0.000    0.000    0.002    0.002 functional.py:104(to_pil_image)
+       26    0.000    0.000    0.000    0.000 instancenorm.py:201(_check_input_dim)
+       45    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(empty_like)
+    27/18    0.000    0.000    0.000    0.000 defmatrix.py:169(__array_finalize__)
+        1    0.000    0.000    0.000    0.000 {built-in method PIL._imaging.fill}
+       17    0.000    0.000    0.009    0.001 activation.py:93(forward)
+        9    0.000    0.000    0.028    0.003 net.py:141(ones)
+        6    0.000    0.000    0.012    0.002 compressed.py:1133(_with_data)
+       18    0.000    0.000    0.000    0.000 shape_base.py:24(atleast_1d)
+      345    0.000    0.000    0.000    0.000 multiarray.py:469(can_cast)
+        6    0.000    0.000    0.000    0.000 construct.py:165(<listcomp>)
+        6    0.000    0.000    0.000    0.000 shape_base.py:1155(tile)
+       42    0.000    0.000    0.003    0.000 {method 'max' of 'numpy.ndarray' objects}
+        9    0.000    0.000    0.042    0.005 compressed.py:1021(sum_duplicates)
+       26    0.000    0.000    0.000    0.000 __init__.py:31(__get__)
+      186    0.000    0.000    0.000    0.000 {built-in method _operator.index}
+       26    0.000    0.000    0.000    0.000 {built-in method torch._C._get_cudnn_enabled}
+        6    0.000    0.000    0.037    0.006 compressed.py:459(_mul_vector)
+       27    0.000    0.000    0.000    0.000 compressed.py:122(_set_self)
+        1    0.000    0.000    0.000    0.000 {method 'decode' of 'ImagingDecoder' objects}
+        9    0.000    0.000    0.000    0.000 {built-in method scipy.sparse._sparsetools.csr_has_canonical_format}
+        6    0.000    0.000    0.055    0.009 base.py:540(_mul_sparse_matrix)
+       42    0.000    0.000    0.003    0.000 _methods.py:28(_amax)
+       69    0.000    0.000    0.000    0.000 _asarray.py:88(asanyarray)
+        6    0.000    0.000    0.000    0.000 {method 'compress' of 'numpy.ndarray' objects}
+       14    0.000    0.000    0.000    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+        6    0.000    0.000    0.000    0.000 defmatrix.py:117(__new__)
+       12    0.000    0.000    0.000    0.000 shape_base.py:82(atleast_2d)
+       21    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(ndim)
+       33    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:1009(_handle_fromlist)
+       33    0.000    0.000    0.000    0.000 {method 'rpartition' of 'str' objects}
+       12    0.000    0.000    3.456    0.288 base.py:558(__matmul__)
+       12    0.000    0.000    0.000    0.000 fromnumeric.py:1648(ravel)
+        9    0.000    0.000    0.008    0.001 numeric.py:223(ones_like)
+        6    0.000    0.000    0.000    0.000 {function matrix.squeeze at 0x7f24eb878ef0}
+       24    0.000    0.000    0.000    0.000 base.py:675(__getattr__)
+        9    0.000    0.000    0.000    0.000 compressed.py:992(__get_has_canonical_format)
+        9    0.000    0.000    0.020    0.002 data.py:90(copy)
+       17    0.000    0.000    0.009    0.001 functional.py:904(relu)
+       18    0.000    0.000    0.000    0.000 {method 'ravel' of 'numpy.ndarray' objects}
+      228    0.000    0.000    0.000    0.000 csr.py:231(_swap)
+        6    0.000    0.000    0.000    0.000 type_check.py:673(common_type)
+       42    0.000    0.000    0.003    0.000 {method 'min' of 'numpy.ndarray' objects}
+       21    0.000    0.000    0.000    0.000 sputils.py:187(isintlike)
+       38    0.000    0.000    0.000    0.000 abc.py:137(__instancecheck__)
+       42    0.000    0.000    0.003    0.000 _methods.py:32(_amin)
+       69    0.000    0.000    0.000    0.000 data.py:25(_get_dtype)
+        2    0.000    0.000    0.215    0.108 conv.py:769(forward)
+       12    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(atleast_2d)
+        6    0.000    0.000    0.000    0.000 numeric.py:590(flatnonzero)
+       12    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(ravel)
+        1    0.000    0.000    0.002    0.002 Image.py:2612(fromarray)
+       46    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 {method 'permute' of 'torch._C._TensorBase' objects}
+        3    0.000    0.000    0.000    0.000 compressed.py:959(toarray)
+        3    0.000    0.000    0.000    0.000 data.py:122(_mul_scalar)
+        3    0.000    0.000    0.000    0.000 {built-in method scipy.sparse._sparsetools.csr_todense}
+        6    0.000    0.000    0.000    0.000 arraysetops.py:151(unique)
+       26    0.000    0.000    0.000    0.000 {method 'dim' of 'torch._C._TensorBase' objects}
+        6    0.000    0.000    0.001    0.000 coo.py:510(_with_data)
+       12    0.000    0.000    0.000    0.000 compressed.py:1013(__set_has_canonical_format)
+       18    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(atleast_1d)
+        3    0.000    0.000    0.036    0.012 compressed.py:1068(sort_indices)
+       36    0.000    0.000    0.000    0.000 sputils.py:239(isdense)
+        1    0.000    0.000    0.000    0.000 grad_mode.py:37(__enter__)
+       18    0.000    0.000    0.000    0.000 tensor.py:447(__array__)
+        6    0.000    0.000    0.000    0.000 defmatrix.py:38(asmatrix)
+        3    0.000    0.000    0.044    0.015 data.py:187(_min_or_max)
+        3    0.000    0.000    0.000    0.000 sputils.py:243(validateaxis)
+        9    0.000    0.000    0.008    0.001 <__array_function__ internals>:2(copyto)
+        6    0.000    0.000    0.000    0.000 sputils.py:72(downcast_intp_index)
+       13    0.000    0.000    0.000    0.000 fromnumeric.py:55(_wrapfunc)
+        9    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(diff)
+       33    0.000    0.000    0.000    0.000 {built-in method builtins.hash}
+       39    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+        3    0.000    0.000    0.002    0.001 base.py:407(__add__)
+        6    0.000    0.000    0.000    0.000 numerictypes.py:293(issubclass_)
+        6    0.000    0.000    0.000    0.000 {method 'view' of 'numpy.ndarray' objects}
+       18    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+       12    0.000    0.000    0.000    0.000 compressed.py:1052(__set_sorted)
+        3    0.000    0.000    0.002    0.001 base.py:391(_add_sparse)
+        3    0.000    0.000    0.000    0.000 base.py:819(todense)
+        2    0.000    0.000    0.000    0.000 utils.py:6(parse)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(tile)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(flatnonzero)
+        3    0.000    0.000    0.034    0.011 base.py:427(__sub__)
+        9    0.000    0.000    0.008    0.001 <__array_function__ internals>:2(ones_like)
+        3    0.000    0.000    0.001    0.000 compressed.py:349(_add_sparse)
+        6    0.000    0.000    0.000    0.000 defmatrix.py:325(squeeze)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(common_type)
+        6    0.000    0.000    0.000    0.000 fromnumeric.py:1759(nonzero)
+        3    0.000    0.000    0.000    0.000 numerictypes.py:365(issubdtype)
+       45    0.000    0.000    0.000    0.000 multiarray.py:77(empty_like)
+        1    0.000    0.000    0.000    0.000 Image.py:2469(new)
+        3    0.000    0.000    0.000    0.000 sputils.py:173(get_sum_dtype)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(unique)
+        6    0.000    0.000    0.000    0.000 fromnumeric.py:1906(compress)
+        6    0.000    0.000    0.000    0.000 {method 'flatten' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.004    0.004 net.py:34(forward)
+        6    0.000    0.000    0.000    0.000 type_check.py:282(iscomplexobj)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(iscomplexobj)
+        1    0.000    0.000    0.000    0.000 Image.py:440(_getdecoder)
+       21    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        3    0.000    0.000    0.044    0.015 data.py:288(max)
+        1    0.000    0.000    0.001    0.001 activation.py:294(forward)
+        3    0.000    0.000    0.000    0.000 defmatrix.py:289(sum)
+        3    0.000    0.000    0.000    0.000 {function matrix.sum at 0x7f24eb878e60}
+        9    0.000    0.000    0.000    0.000 {built-in method numpy.core._multiarray_umath.normalize_axis_index}
+        1    0.000    0.000    0.000    0.000 Image.py:572(_new)
+        3    0.000    0.000    0.034    0.011 compressed.py:352(_sub_sparse)
+        3    0.000    0.000    0.000    0.000 compressed.py:1037(__get_sorted)
+        2    0.000    0.000    0.000    0.000 conv.py:484(_output_padding)
+       21    0.000    0.000    0.000    0.000 fromnumeric.py:2986(ndim)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(compress)
+        6    0.000    0.000    0.000    0.000 {method 'transpose' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.000    0.000 Image.py:807(frombytes)
+        1    0.000    0.000    0.000    0.000 Image.py:2508(frombytes)
+        6    0.000    0.000    0.000    0.000 sputils.py:55(upcast_char)
+        1    0.000    0.000    0.003    0.003 transforms.py:127(__call__)
+        6    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(nonzero)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.all}
+        3    0.000    0.000    0.000    0.000 defmatrix.py:937(T)
+        1    0.000    0.000    0.000    0.000 Image.py:2552(frombuffer)
+        1    0.000    0.000    6.362    6.362 analyze.py:19(demo)
+        6    0.000    0.000    0.000    0.000 dia.py:397(isspmatrix_dia)
+        3    0.000    0.000    0.000    0.000 {built-in method scipy.sparse._sparsetools.csr_has_sorted_indices}
+        3    0.000    0.000    0.000    0.000 base.py:1176(_process_toarray_args)
+        1    0.000    0.000    0.000    0.000 grad_mode.py:41(__exit__)
+        1    0.000    0.000    0.000    0.000 grad_mode.py:137(__init__)
+       12    0.000    0.000    0.000    0.000 shape_base.py:1227(<genexpr>)
+        6    0.000    0.000    0.000    0.000 arraysetops.py:138(_unpack_tuple)
+       21    0.000    0.000    0.000    0.000 fromnumeric.py:2982(_ndim_dispatcher)
+        1    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(transpose)
+        2    0.000    0.000    0.000    0.000 Image.py:547(__init__)
+       12    0.000    0.000    0.000    0.000 shape_base.py:78(_atleast_2d_dispatcher)
+        6    0.000    0.000    0.000    0.000 {method 'sort' of 'numpy.ndarray' objects}
+        3    0.000    0.000    0.000    0.000 Image.py:2451(_check_size)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.abs}
+        6    0.000    0.000    0.000    0.000 shape_base.py:1151(_tile_dispatcher)
+        9    0.000    0.000    0.000    0.000 function_base.py:1143(_diff_dispatcher)
+        6    0.000    0.000    0.000    0.000 type_check.py:209(_is_type_dispatcher)
+        9    0.000    0.000    0.000    0.000 numeric.py:219(_ones_like_dispatcher)
+        1    0.000    0.000    0.000    0.000 {built-in method PIL._imaging.raw_decoder}
+        2    0.000    0.000    0.000    0.000 {built-in method torch._C.is_grad_enabled}
+        1    0.000    0.000    0.000    0.000 transforms.py:124(__init__)
+        6    0.000    0.000    0.000    0.000 arraysetops.py:146(_unique_dispatcher)
+        3    0.000    0.000    0.000    0.000 defmatrix.py:255(_collapse)
+       18    0.000    0.000    0.000    0.000 shape_base.py:20(_atleast_1d_dispatcher)
+        6    0.000    0.000    0.000    0.000 fromnumeric.py:1755(_nonzero_dispatcher)
+        6    0.000    0.000    0.000    0.000 fromnumeric.py:1902(_compress_dispatcher)
+        1    0.000    0.000    0.000    0.000 {method 'setimage' of 'ImagingDecoder' objects}
+        1    0.000    0.000    0.000    0.000 Image.py:591(__exit__)
+        1    0.000    0.000    0.000    0.000 Image.py:629(__del__)
+        2    0.000    0.000    0.000    0.000 {built-in method torch._C.set_grad_enabled}
+        2    0.000    0.000    0.000    0.000 {method 'ndimension' of 'torch._C._TensorBase' objects}
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:599(_transpose_dispatcher)
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:603(transpose)
+       12    0.000    0.000    0.000    0.000 fromnumeric.py:1644(_ravel_dispatcher)
+        3    0.000    0.000    0.000    0.000 _methods.py:36(_sum)
+        6    0.000    0.000    0.000    0.000 numeric.py:586(_flatnonzero_dispatcher)
+        9    0.000    0.000    0.000    0.000 multiarray.py:1043(copyto)
+        1    0.000    0.000    0.000    0.000 {method 'copy' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 base.py:635(__iadd__)
+        3    0.000    0.000    0.000    0.000 base.py:638(__isub__)
+        6    0.000    0.000    0.000    0.000 csr.py:163(tocsr)
+        6    0.000    0.000    0.000    0.000 type_check.py:669(_common_type_dispatcher)
+        1    0.000    0.000    0.000    0.000 _util.py:9(isStringType)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

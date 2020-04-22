@@ -5,6 +5,7 @@ import scipy.sparse as sp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from memory_profiler import profile
 
 
 class ResidualBlock(nn.Module):
@@ -135,6 +136,7 @@ class Generator_spade(nn.Module):
         return _input.view(3, -1, 64 * 64) # (N, C+136, H*W)
 
     @staticmethod
+    @profile
     def get_weight(theta, phi):
 
         def ones(mat):
@@ -162,6 +164,7 @@ class Generator_spade(nn.Module):
         return weight
 
     @torch.no_grad()
+    @profile
     def forward_atten(self, c: "(b, c, h, w)", s, mask_c, mask_s, diff_c, diff_s):
         """attention version
         c: (b, c, h, w)
