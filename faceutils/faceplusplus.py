@@ -18,13 +18,13 @@ def encode(image: Image) -> str:
         return base64.b64encode(output_buf.getvalue()).decode('utf-8')
 
 
-def decode(image: 'base64') -> Image:
+def decode(image: base64) -> Image:
     image = base64.b64decode(image)
     image = Image.open(BytesIO(image))
     return image
 
 
-def beautify(image: 'PIL.Image') -> str:
+def beautify(image: Image or str) -> str:
     if not isinstance(image, str):
         image = encode(image)
     data = {
@@ -36,7 +36,7 @@ def beautify(image: 'PIL.Image') -> str:
     return resp.get('result', image)
 
 
-def rank(image: 'PIL.Image') -> int:
+def rank(image: Image or str) -> int:
     if not isinstance(image, str):
         image = encode(image)
     data = {
@@ -47,7 +47,7 @@ def rank(image: 'PIL.Image') -> int:
         'beauty_score_min': 71,
         }
     resp = requests.post(rank.url, data=data).json()
-    if 'faces' not in resp.keys(): return None
+    if 'faces' not in resp.keys(): return 100
 
     scores = resp['faces'][0]['attributes']['beauty']
     return max(scores.values())

@@ -26,11 +26,11 @@ app = Flask(__name__)
 def transfer():
     data = json.loads(request.get_data().decode())
     model = data.get('model')
+    image = data.get('file') # base64
+    image = futils.fpp.beautify(image) # base64
     image = futils.fpp.decode(data.get('file'))
     box, prep = makeup.preprocess(image)
     result = makeup.solver.test(*prep, *refs[model])
-    # result = futils.fpp.beautify(result) # base64
-    # result = futils.fpp.decode(result)
     result = futils.merge(image, result, box)
     return futils.fpp.encode(result)
 
@@ -61,7 +61,8 @@ font_label = ImageFont.truetype('assets/font.otf', 140)
 
 @app.route('/test/', methods=['POST'])
 def test():
-    image = json.loads(request.get_data().decode()).get('file')
+    image = json.loads(request.get_data().decode()).get('file') # base64
+    image = futils.fpp.beautify(image) # base64
     src_score = futils.fpp.rank(image)
     image = futils.fpp.decode(image)
     _, prep = makeup.preprocess(image)
@@ -77,23 +78,30 @@ def test():
             max_score = score
             result = temp
     score = (max_score - src_score) / (100 - src_score) * 39
-    score += 61
-    score = int(score)
-    # result = futils.fpp.beautify(result) # base64
-    # result = futils.fpp.decode(result)
+    score = int(score) + 60
 
     # draw result image
     result = result.resize((1016, 1016), Image.ANTIALIAS)
     canvas = Image.new(size=bg.size, mode='RGBA', color=(255, 255, 255))
     canvas.paste(result, box=(392, 582))
     canvas.paste(bg, mask=bg)
+
+    grade = 0 if score < 60 else \
+            1 if 60 <= score < 70 else \
+            2 if 70 <= score < 80 else \
+            3 if 80 <= score < 90 else \
+            4
+    with Image.open(f'assets/{ grade }.png') as remark:
+        canvas.paste(remark, mask=remark)
+
     draw = ImageDraw.Draw(canvas)
     if model_id == -1:
-        draw.text((88, 162), '∞', font=font_num, fill='#ffffff')
+        score = '∞'
         label = "绝美素颜"
     else:
-        draw.text((88, 162), str(score) + '%', font=font_num, fill='#ffffff')
+        score = str(score) + '%'
         label = labels[model_id]
+    draw.text((88, 162), score, font=font_num, fill='#ffffff')
     for i, c in enumerate(label):
         draw.text((119, 655 + i * 153), c, font=font_label, fill='#ff9181')
         draw.text((110, 647 + i * 153), c, font=font_label, fill='#ffffff')
